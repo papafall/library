@@ -52,17 +52,15 @@ Book.prototype.toggleRead = function () {
 async function fetchBookCover(title, author) {
   try {
     const query = `${title} ${author}`.replace(/\s+/g, "+");
-    const response = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`
-    );
+    const corsProxy = "https://corsproxy.io/?url=";
+    const apiUrl = `https://openlibrary.org/search.json?q=${query}&limit=1`;
+
+    const response = await fetch(corsProxy + encodeURIComponent(apiUrl));
     const data = await response.json();
 
-    if (data.items && data.items[0]?.volumeInfo?.imageLinks?.thumbnail) {
-      // Get higher quality image by modifying URL
-      return data.items[0].volumeInfo.imageLinks.thumbnail.replace(
-        "zoom=1",
-        "zoom=2"
-      );
+    if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+      const coverId = data.docs[0].cover_i;
+      return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
     }
     return null;
   } catch (error) {
@@ -104,7 +102,6 @@ function createBookCard(book) {
 
   // Set cover image if available
   if (book.coverUrl) {
-    card.style.setProperty("--book-cover", `url(${book.coverUrl})`);
     card.style.setProperty("background-image", `url(${book.coverUrl})`);
   }
 
