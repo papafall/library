@@ -51,17 +51,56 @@ Book.prototype.toggleRead = function () {
 // Function to fetch book cover
 async function fetchBookCover(title, author) {
   try {
-    const query = `${title} ${author}`.replace(/\s+/g, "+");
-    const corsProxy = "https://corsproxy.io/?url=";
-    const apiUrl = `https://openlibrary.org/search.json?q=${query}&limit=1`;
+    // Clean and encode the search query
+    const query = `${title} ${author}`
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, "+");
+    const corsProxy = "https://corsproxy.io/?";
 
-    const response = await fetch(corsProxy + encodeURIComponent(apiUrl));
-    const data = await response.json();
+    // Try first with title and author
+    let apiUrl = `https://openlibrary.org/search.json?q=${query}&limit=1`;
+    let response = await fetch(corsProxy + encodeURIComponent(apiUrl));
+    let data = await response.json();
 
-    if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
-      const coverId = data.docs[0].cover_i;
-      return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+    // If no results, try with just the title
+    if (!data.docs || data.docs.length === 0) {
+      const titleQuery = title.replace(/[^\w\s]/g, "").replace(/\s+/g, "+");
+      apiUrl = `https://openlibrary.org/search.json?title=${titleQuery}&limit=1`;
+      response = await fetch(corsProxy + encodeURIComponent(apiUrl));
+      data = await response.json();
     }
+
+    if (data.docs && data.docs.length > 0) {
+      // Try to get the cover ID
+      const doc = data.docs[0];
+      if (doc.cover_i) {
+        return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+      } else if (doc.key) {
+        // If no cover_i, try to get cover from the work's key
+        const workUrl = `https://openlibrary.org${doc.key}.json`;
+        const workResponse = await fetch(
+          corsProxy + encodeURIComponent(workUrl)
+        );
+        const workData = await workResponse.json();
+        if (workData.covers && workData.covers.length > 0) {
+          return `https://covers.openlibrary.org/b/id/${workData.covers[0]}-L.jpg`;
+        }
+      }
+    }
+
+    // If still no cover found, try an alternative API
+    const alternativeApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`;
+    response = await fetch(corsProxy + encodeURIComponent(alternativeApiUrl));
+    data = await response.json();
+
+    if (data.items && data.items[0]?.volumeInfo?.imageLinks?.thumbnail) {
+      return data.items[0].volumeInfo.imageLinks.thumbnail.replace(
+        "zoom=1",
+        "zoom=2"
+      );
+    }
+
+    console.log(`No cover found for: ${title} by ${author}`);
     return null;
   } catch (error) {
     console.error("Error fetching book cover:", error);
@@ -69,10 +108,32 @@ async function fetchBookCover(title, author) {
   }
 }
 
+// Function to preload image
+function preloadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => reject();
+    img.src = url;
+  });
+}
+
 // Function to add a book to the library
 async function addBookToLibrary(title, author, pages, read) {
   const book = new Book(title, author, pages, read);
-  book.coverUrl = await fetchBookCover(title, author);
+  const coverUrl = await fetchBookCover(title, author);
+
+  if (coverUrl) {
+    try {
+      // Verify the image loads correctly
+      await preloadImage(coverUrl);
+      book.coverUrl = coverUrl;
+    } catch (error) {
+      console.log(`Failed to load cover image for: ${title}`);
+      book.coverUrl = null;
+    }
+  }
+
   myLibrary.push(book);
   displayBooks();
 }

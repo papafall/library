@@ -201,6 +201,15 @@ button:active {
   transition: all 0.3s ease;
 }
 
+.book-card:not([style*="background-image"]) {
+  background: linear-gradient(
+    135deg,
+    var(--card-bg) 0%,
+    var(--primary-color) 100%
+  );
+  opacity: 0.9;
+}
+
 .book-card:hover {
   transform: translateY(-5px) scale(1.02);
   box-shadow: var(--shadow-hover);
@@ -220,6 +229,22 @@ button:active {
     rgba(var(--card-bg-rgb), 0.95) 100%
   );
   pointer-events: none;
+}
+
+.no-cover {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  opacity: 0.15;
+  z-index: 0;
+  transition: all 0.3s ease;
+}
+
+.book-card:hover .no-cover {
+  opacity: 0.2;
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .book-card .content-wrapper {
