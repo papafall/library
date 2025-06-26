@@ -40,6 +40,7 @@ function Book(title, author, pages, read) {
   this.author = author;
   this.pages = pages;
   this.read = read;
+  this.coverUrl = null;
 }
 
 // Book prototype method to toggle read status
@@ -47,9 +48,33 @@ Book.prototype.toggleRead = function () {
   this.read = !this.read;
 };
 
+// Function to fetch book cover
+async function fetchBookCover(title, author) {
+  try {
+    const query = `${title} ${author}`.replace(/\s+/g, "+");
+    const response = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`
+    );
+    const data = await response.json();
+
+    if (data.items && data.items[0]?.volumeInfo?.imageLinks?.thumbnail) {
+      // Get higher quality image by modifying URL
+      return data.items[0].volumeInfo.imageLinks.thumbnail.replace(
+        "zoom=1",
+        "zoom=2"
+      );
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching book cover:", error);
+    return null;
+  }
+}
+
 // Function to add a book to the library
-function addBookToLibrary(title, author, pages, read) {
+async function addBookToLibrary(title, author, pages, read) {
   const book = new Book(title, author, pages, read);
+  book.coverUrl = await fetchBookCover(title, author);
   myLibrary.push(book);
   displayBooks();
 }
@@ -77,22 +102,31 @@ function createBookCard(book) {
   card.classList.add("book-card");
   card.setAttribute("data-id", book.id);
 
+  // Set cover image if available
+  if (book.coverUrl) {
+    card.style.setProperty("--book-cover", `url(${book.coverUrl})`);
+    card.style.setProperty("background-image", `url(${book.coverUrl})`);
+  }
+
   card.innerHTML = `
-        <h3>${book.title}</h3>
-        <div class="book-info">
-            <p>Author: ${book.author}</p>
-            <p>Pages: ${book.pages}</p>
-            <p>Status: ${book.read ? "Read" : "Not read yet"}</p>
-        </div>
-        <div class="book-actions">
-            <button onclick="toggleReadStatus('${
-              book.id
-            }')" class="toggle-btn ${book.read ? "read" : ""}">${
+        ${!book.coverUrl ? '<div class="no-cover">📚</div>' : ""}
+        <div class="content-wrapper">
+            <h3>${book.title}</h3>
+            <div class="book-info">
+                <p>Author: ${book.author}</p>
+                <p>Pages: ${book.pages}</p>
+                <p>Status: ${book.read ? "Read" : "Not read yet"}</p>
+            </div>
+            <div class="book-actions">
+                <button onclick="toggleReadStatus('${
+                  book.id
+                }')" class="toggle-btn ${book.read ? "read" : ""}">${
     book.read ? "Mark as Unread" : "Mark as Read"
   }</button>
-            <button class="delete-btn" onclick="removeBook('${
-              book.id
-            }')">Remove</button>
+                <button class="delete-btn" onclick="removeBook('${
+                  book.id
+                }')">Remove</button>
+            </div>
         </div>
     `;
 
@@ -185,7 +219,15 @@ bookForm.addEventListener("submit", (e) => {
   }
 });
 
-// Add some sample books to start with
-addBookToLibrary("The Hobbit", "J.R.R. Tolkien", 295, true);
-addBookToLibrary("1984", "George Orwell", 328, false);
-addBookToLibrary("Pride and Prejudice", "Jane Austen", 432, true);
+// Update sample books to be added asynchronously
+async function addSampleBooks() {
+  await addBookToLibrary("The Hobbit", "J.R.R. Tolkien", 295, true);
+  await addBookToLibrary("1984", "George Orwell", 328, false);
+  await addBookToLibrary("Pride and Prejudice", "Jane Austen", 432, true);
+}
+
+// Call addSampleBooks when the page loads
+document.addEventListener("DOMContentLoaded", () => {
+  mainTitle.setAttribute("data-loaded", "true");
+  addSampleBooks();
+});
