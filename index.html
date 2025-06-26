@@ -29,7 +29,10 @@
 
     <div class="container">
       <header>
-        <h1 id="mainTitle">My Library</h1>
+        <div class="header-content">
+          <h1 id="mainTitle">My Library</h1>
+          <p class="book-count">(<span id="bookCount">0</span> books)</p>
+        </div>
         <button
           id="newBookBtn"
           class="primary-button"
@@ -68,18 +71,46 @@
               maxlength="100"
             />
           </div>
+          <div class="form-row">
+            <div class="form-group half">
+              <label for="pages">Number of Pages</label>
+              <input
+                type="number"
+                id="pages"
+                name="pages"
+                required
+                aria-required="true"
+                min="1"
+                max="99999"
+                placeholder="Enter pages"
+              />
+            </div>
+            <div class="form-group half">
+              <label for="genre">Genre</label>
+              <select id="genre" name="genre" required aria-required="true">
+                <option value="">Select genre</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Non-fiction">Non-fiction</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Science Fiction">Science Fiction</option>
+                <option value="Biography">Biography</option>
+                <option value="Romance">Romance</option>
+                <option value="Historical">Historical</option>
+                <option value="Horror">Horror</option>
+                <option value="Self-help">Self-help</option>
+              </select>
+            </div>
+          </div>
           <div class="form-group">
-            <label for="pages">Number of Pages</label>
-            <input
-              type="number"
-              id="pages"
-              name="pages"
-              required
-              aria-required="true"
-              min="1"
-              max="99999"
-              placeholder="Enter number of pages"
-            />
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="3"
+              placeholder="Enter a brief description"
+              maxlength="500"
+            ></textarea>
           </div>
           <div class="form-group checkbox-group">
             <label for="read" class="checkbox-label">
@@ -89,13 +120,6 @@
           </div>
           <div class="form-buttons">
             <button
-              type="submit"
-              class="primary-button"
-              aria-label="Add book to library"
-            >
-              Add to Library
-            </button>
-            <button
               type="button"
               id="cancelBtn"
               class="secondary-button"
@@ -103,13 +127,18 @@
             >
               Cancel
             </button>
+            <button
+              type="submit"
+              class="primary-button"
+              aria-label="Add book to library"
+            >
+              Add to Library
+            </button>
           </div>
         </form>
       </dialog>
 
-      <main id="libraryContainer" aria-label="Book library" class="book-grid">
-        <!-- Books will be displayed here -->
-      </main>
+      <div id="libraryContainer"></div>
     </div>
     <script src="script.js"></script>
   </body>

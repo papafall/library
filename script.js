@@ -34,11 +34,13 @@ themeToggle.addEventListener("change", switchTheme, false);
 const myLibrary = [];
 
 // Book constructor
-function Book(title, author, pages, read) {
+function Book(title, author, pages, genre, description, read) {
   this.id = crypto.randomUUID();
   this.title = title;
   this.author = author;
   this.pages = pages;
+  this.genre = genre;
+  this.description = description;
   this.read = read;
   this.coverUrl = null;
 }
@@ -119,18 +121,29 @@ function preloadImage(url) {
 }
 
 // Function to add a book to the library
-async function addBookToLibrary(title, author, pages, read) {
-  const book = new Book(title, author, pages, read);
-  const coverUrl = await fetchBookCover(title, author);
+async function addBookToLibrary(
+  title,
+  author,
+  pages,
+  genre,
+  description,
+  read,
+  directCoverUrl = null
+) {
+  const book = new Book(title, author, pages, genre, description, read);
 
-  if (coverUrl) {
-    try {
-      // Verify the image loads correctly
-      await preloadImage(coverUrl);
-      book.coverUrl = coverUrl;
-    } catch (error) {
-      console.log(`Failed to load cover image for: ${title}`);
-      book.coverUrl = null;
+  if (directCoverUrl) {
+    book.coverUrl = directCoverUrl;
+  } else {
+    const coverUrl = await fetchBookCover(title, author);
+    if (coverUrl) {
+      try {
+        await preloadImage(coverUrl);
+        book.coverUrl = coverUrl;
+      } catch (error) {
+        console.log(`Failed to load cover image for: ${title}`);
+        book.coverUrl = null;
+      }
     }
   }
 
@@ -161,42 +174,40 @@ function createBookCard(book) {
   card.classList.add("book-card");
   card.setAttribute("data-id", book.id);
 
-  // Set cover image if available
-  if (book.coverUrl) {
-    card.style.setProperty("background-image", `url(${book.coverUrl})`);
-  }
+  // Set cover image or fallback
+  const coverHtml = book.coverUrl
+    ? `<img src="${book.coverUrl}" alt="${book.title} cover" class="book-cover">`
+    : `<div class="book-cover" style="background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);display:flex;align-items:center;justify-content:center;"><span style="font-size: 4rem;">📚</span></div>`;
 
   card.innerHTML = `
-    ${!book.coverUrl ? '<div class="no-cover">📚</div>' : ""}
-    <div class="content-wrapper">
-        <h3>${book.title}</h3>
-        <div class="book-info">
-            <p><strong>By:</strong> ${book.author}</p>
-            <p><strong>Pages:</strong> ${book.pages}</p>
-            <p><strong>Status:</strong> ${
-              book.read ? "✅ Read" : "📖 Not read yet"
-            }</p>
-        </div>
-        <div class="book-actions">
-            <button onclick="toggleReadStatus('${book.id}')" 
-                    class="toggle-btn ${book.read ? "read" : ""}"
-                    aria-label="${
-                      book.read ? "Mark as unread" : "Mark as read"
-                    }">
-                ${book.read ? "📖 Mark as Unread" : "✅ Mark as Read"}
-            </button>
-            <button class="delete-btn" 
-                    onclick="removeBook('${book.id}')"
-                    aria-label="Remove book">
-                🗑️ Remove
-            </button>
-        </div>
+    ${coverHtml}
+    <div class="book-info">
+      <h3 class="book-title">${book.title}</h3>
+      <p class="book-author">by ${book.author}</p>
+      <div class="book-details">
+        <span>${book.pages} pages</span>
+        <span>•</span>
+        <span>${book.genre || "Uncategorized"}</span>
+      </div>
+      ${
+        book.description
+          ? `<p class="book-description">${book.description}</p>`
+          : ""
+      }
+      <div class="book-actions">
+        <button onclick="toggleReadStatus('${book.id}')" 
+                class="primary-button"
+                aria-label="${book.read ? "Mark as unread" : "Mark as read"}">
+          ${book.read ? "📖 Unread" : "✅ Read"}
+        </button>
+        <button class="secondary-button" 
+                onclick="removeBook('${book.id}')"
+                aria-label="Remove book">
+          🗑️
+        </button>
+      </div>
     </div>
-`;
-
-  // Add animation delay based on position
-  const delay = document.querySelectorAll(".book-card").length * 0.1;
-  card.style.animationDelay = `${delay}s`;
+  `;
 
   return card;
 }
@@ -205,6 +216,10 @@ function createBookCard(book) {
 function displayBooks() {
   const libraryContainer = document.getElementById("libraryContainer");
   libraryContainer.innerHTML = "";
+
+  // Update book count
+  const bookCount = document.getElementById("bookCount");
+  bookCount.textContent = myLibrary.length;
 
   myLibrary.forEach((book) => {
     const bookCard = createBookCard(book);
@@ -215,7 +230,9 @@ function displayBooks() {
 // Function to toggle read status with animation
 function toggleReadStatus(bookId) {
   const book = myLibrary.find((book) => book.id === bookId);
-  const button = document.querySelector(`[data-id="${bookId}"] .toggle-btn`);
+  const button = document.querySelector(
+    `[data-id="${bookId}"] .primary-button`
+  );
 
   if (book && button) {
     // Add rotation animation
@@ -275,19 +292,44 @@ bookForm.addEventListener("submit", (e) => {
   const title = document.getElementById("title").value.trim();
   const author = document.getElementById("author").value.trim();
   const pages = parseInt(document.getElementById("pages").value);
+  const genre = document.getElementById("genre").value;
+  const description = document.getElementById("description").value.trim();
   const read = document.getElementById("read").checked;
 
   if (title && author && pages > 0) {
-    addBookToLibrary(title, author, pages, read);
+    addBookToLibrary(title, author, pages, genre, description, read);
     closeDialog();
+    bookForm.reset();
   }
 });
 
 // Update sample books to be added asynchronously
 async function addSampleBooks() {
-  await addBookToLibrary("The Hobbit", "J.R.R. Tolkien", 295, true);
-  await addBookToLibrary("1984", "George Orwell", 328, false);
-  await addBookToLibrary("Pride and Prejudice", "Jane Austen", 432, true);
+  await addBookToLibrary(
+    "The Hobbit",
+    "J.R.R. Tolkien",
+    295,
+    "Fantasy",
+    "A fantasy novel about the adventures of Bilbo Baggins.",
+    true
+  );
+  await addBookToLibrary(
+    "1984",
+    "George Orwell",
+    328,
+    "Science Fiction",
+    "A dystopian novel about totalitarian surveillance society.",
+    false
+  );
+  await addBookToLibrary(
+    "Pride and Prejudice",
+    "Jane Austen",
+    432,
+    "Romance",
+    "A romantic novel about the Bennet sisters in 19th century England.",
+    true,
+    "https://covers.openlibrary.org/b/id/12645114-L.jpg"
+  );
 }
 
 // Call addSampleBooks when the page loads
