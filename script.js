@@ -167,26 +167,32 @@ function createBookCard(book) {
   }
 
   card.innerHTML = `
-        ${!book.coverUrl ? '<div class="no-cover">📚</div>' : ""}
-        <div class="content-wrapper">
-            <h3>${book.title}</h3>
-            <div class="book-info">
-                <p>Author: ${book.author}</p>
-                <p>Pages: ${book.pages}</p>
-                <p>Status: ${book.read ? "Read" : "Not read yet"}</p>
-            </div>
-            <div class="book-actions">
-                <button onclick="toggleReadStatus('${
-                  book.id
-                }')" class="toggle-btn ${book.read ? "read" : ""}">${
-    book.read ? "Mark as Unread" : "Mark as Read"
-  }</button>
-                <button class="delete-btn" onclick="removeBook('${
-                  book.id
-                }')">Remove</button>
-            </div>
+    ${!book.coverUrl ? '<div class="no-cover">📚</div>' : ""}
+    <div class="content-wrapper">
+        <h3>${book.title}</h3>
+        <div class="book-info">
+            <p><strong>By:</strong> ${book.author}</p>
+            <p><strong>Pages:</strong> ${book.pages}</p>
+            <p><strong>Status:</strong> ${
+              book.read ? "✅ Read" : "📖 Not read yet"
+            }</p>
         </div>
-    `;
+        <div class="book-actions">
+            <button onclick="toggleReadStatus('${book.id}')" 
+                    class="toggle-btn ${book.read ? "read" : ""}"
+                    aria-label="${
+                      book.read ? "Mark as unread" : "Mark as read"
+                    }">
+                ${book.read ? "📖 Mark as Unread" : "✅ Mark as Read"}
+            </button>
+            <button class="delete-btn" 
+                    onclick="removeBook('${book.id}')"
+                    aria-label="Remove book">
+                🗑️ Remove
+            </button>
+        </div>
+    </div>
+`;
 
   // Add animation delay based on position
   const delay = document.querySelectorAll(".book-card").length * 0.1;

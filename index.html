@@ -9,10 +9,14 @@
     />
     <title>My Library | Track Your Books</title>
     <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="theme-switch-wrapper">
-      <label class="theme-switch" for="checkbox">
+      <label class="theme-switch" for="checkbox" title="Toggle dark mode">
         <input type="checkbox" id="checkbox" />
         <div class="slider">
           <div class="slider-icons">
@@ -26,8 +30,12 @@
     <div class="container">
       <header>
         <h1 id="mainTitle">My Library</h1>
-        <button id="newBookBtn" aria-label="Add new book">
-          <span>Add New Book</span>
+        <button
+          id="newBookBtn"
+          class="primary-button"
+          aria-label="Add new book"
+        >
+          <span>📚 Add New Book</span>
         </button>
       </header>
 
@@ -35,7 +43,7 @@
         <form id="bookForm">
           <h2 id="dialogTitle">Add New Book</h2>
           <div class="form-group">
-            <label for="title">Title:</label>
+            <label for="title">Book Title</label>
             <input
               type="text"
               id="title"
@@ -43,10 +51,12 @@
               required
               aria-required="true"
               placeholder="Enter book title"
+              autocomplete="off"
+              maxlength="100"
             />
           </div>
           <div class="form-group">
-            <label for="author">Author:</label>
+            <label for="author">Author Name</label>
             <input
               type="text"
               id="author"
@@ -54,10 +64,12 @@
               required
               aria-required="true"
               placeholder="Enter author name"
+              autocomplete="off"
+              maxlength="100"
             />
           </div>
           <div class="form-group">
-            <label for="pages">Pages:</label>
+            <label for="pages">Number of Pages</label>
             <input
               type="number"
               id="pages"
@@ -65,22 +77,28 @@
               required
               aria-required="true"
               min="1"
-              placeholder="Number of pages"
+              max="99999"
+              placeholder="Enter number of pages"
             />
           </div>
-          <div class="form-group">
+          <div class="form-group checkbox-group">
             <label for="read" class="checkbox-label">
               <input type="checkbox" id="read" name="read" />
-              Have you read it?
+              <span class="checkbox-text">I have read this book</span>
             </label>
           </div>
           <div class="form-buttons">
-            <button type="submit" aria-label="Add book to library">
-              Add Book
+            <button
+              type="submit"
+              class="primary-button"
+              aria-label="Add book to library"
+            >
+              Add to Library
             </button>
             <button
               type="button"
               id="cancelBtn"
+              class="secondary-button"
               aria-label="Cancel adding book"
             >
               Cancel
@@ -89,7 +107,7 @@
         </form>
       </dialog>
 
-      <main id="libraryContainer" aria-label="Book library">
+      <main id="libraryContainer" aria-label="Book library" class="book-grid">
         <!-- Books will be displayed here -->
       </main>
     </div>
