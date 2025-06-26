@@ -1,48 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Project</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A personal library management system to track your books"
+    />
+    <title>My Library | Track Your Books</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>My Library</h1>
-            <button id="newBookBtn">New Book</button>
-        </header>
+      <header>
+        <h1 id="mainTitle">My Library</h1>
+        <button id="newBookBtn" aria-label="Add new book">
+          <span>Add New Book</span>
+        </button>
+      </header>
 
-        <dialog id="bookDialog">
-            <form id="bookForm">
-                <h2>Add New Book</h2>
-                <div class="form-group">
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label for="author">Author:</label>
-                    <input type="text" id="author" name="author" required>
-                </div>
-                <div class="form-group">
-                    <label for="pages">Pages:</label>
-                    <input type="number" id="pages" name="pages" required min="1">
-                </div>
-                <div class="form-group">
-                    <label for="read">Have you read it?</label>
-                    <input type="checkbox" id="read" name="read">
-                </div>
-                <div class="form-buttons">
-                    <button type="submit">Add Book</button>
-                    <button type="button" id="cancelBtn">Cancel</button>
-                </div>
-            </form>
-        </dialog>
+      <dialog id="bookDialog" aria-labelledby="dialogTitle">
+        <form id="bookForm">
+          <h2 id="dialogTitle">Add New Book</h2>
+          <div class="form-group">
+            <label for="title">Title:</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              aria-required="true"
+              placeholder="Enter book title"
+            />
+          </div>
+          <div class="form-group">
+            <label for="author">Author:</label>
+            <input
+              type="text"
+              id="author"
+              name="author"
+              required
+              aria-required="true"
+              placeholder="Enter author name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="pages">Pages:</label>
+            <input
+              type="number"
+              id="pages"
+              name="pages"
+              required
+              aria-required="true"
+              min="1"
+              placeholder="Number of pages"
+            />
+          </div>
+          <div class="form-group">
+            <label for="read" class="checkbox-label">
+              <input type="checkbox" id="read" name="read" />
+              Have you read it?
+            </label>
+          </div>
+          <div class="form-buttons">
+            <button type="submit" aria-label="Add book to library">
+              Add Book
+            </button>
+            <button
+              type="button"
+              id="cancelBtn"
+              aria-label="Cancel adding book"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </dialog>
 
-        <main id="libraryContainer">
-            <!-- Books will be displayed here -->
-        </main>
+      <main id="libraryContainer" aria-label="Book library">
+        <!-- Books will be displayed here -->
+      </main>
     </div>
     <script src="script.js"></script>
-</body>
-</html> 
+  </body>
+</html>
